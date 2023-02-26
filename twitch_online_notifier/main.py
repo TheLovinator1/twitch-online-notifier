@@ -1,6 +1,5 @@
 import asyncio
-import signal
-import sys
+import logging
 from typing import Any, Dict
 
 from discord_webhook import DiscordWebhook
@@ -36,18 +35,19 @@ async def on_live(data: Dict[str, Any]) -> None:
     broadcaster_login: str = data["event"]["broadcaster_user_login"] or "Unknown"
     broadcaster_url: str = f"https://twitch.tv/{broadcaster_login}" or "Unknown"
 
-    print(f"{broadcaster_user_name} is live!")
-    print(f"\tURL: {broadcaster_url}")
+    # Report error if any of the values are Unknown.
+    if "Unknown" in (broadcaster_user_name, broadcaster_login, broadcaster_url):
+        send_message(
+            "twitch-online-notifier - ERROR: Unknown value in 'on_live' function.\n"
+            f"broadcaster_user_name: '{broadcaster_user_name}'\n"
+            f"broadcaster_login: '{broadcaster_login}'\n"
+            f"broadcaster_url: '{broadcaster_url}'"
+        )
+
+    logging.info("%s is live!", broadcaster_user_name)
+    logging.info("\tURL: %s", broadcaster_url)
 
     send_message(f"{broadcaster_user_name} is live! \n {broadcaster_url}")
-
-
-async def on_shutdown(event_sub: EventSub, twitch: Twitch) -> None:
-    """Handle shutdown gracefully when running on Linux."""
-    print("Shutting down...")
-    await event_sub.stop()
-    await twitch.close()
-    sys.exit(0)
 
 
 async def main() -> None:
@@ -65,24 +65,21 @@ async def main() -> None:
 
     # Add a listener for the stream.online event for each user.
     async for user in twitch.get_users(logins=settings.usernames):
-        print(f"Listening for events for '{user.login}'...")
+        logging.info("Listening for events for '%s'...", user.login)
         if user.id:
             await event_sub.listen_stream_online(user.id, on_live)  # type: ignore
         else:
-            send_message(f"ERROR: User '{user.login}' had no id.")
+            logging.error("User '%s' had no id.", user.login)
+            send_message(f"twitch-online-notifier - ERROR: User '{user.login}' had no id.")
 
-    # Handle Ctrl+C gracefully on Linux.
-    if sys.platform == "linux":
-        loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
-        for signame in ("SIGINT", "SIGTERM"):
-            loop.add_signal_handler(
-                getattr(signal, signame),
-                lambda: asyncio.create_task(on_shutdown(event_sub, twitch)),
-            )
+    logging.info("I am now listening for events on %s :-)", settings.eventsub_url)
 
-    print("Listening for events...")
+
+def start() -> None:
+    logging.basicConfig(level=logging.getLevelName("INFO"))
+    asyncio.run(main())
 
 
 if __name__ == "__main__":
     # Run the main function.
-    asyncio.run(main())
+    start()
