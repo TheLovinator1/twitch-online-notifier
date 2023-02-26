@@ -1,8 +1,6 @@
 services:
   twitch-online-notifier:
-    image: thelovinator/twitch-online-notifier
-    env_file:
-      - .env
+    image: ghcr.io/thelovinator1/twitch-online-notifier:latest
     container_name: twitch-online-notifier
     environment:
       - TWITCH_APP_ID=${TWITCH_APP_ID}
