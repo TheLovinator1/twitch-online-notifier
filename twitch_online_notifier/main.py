@@ -1,11 +1,13 @@
 import asyncio
 import logging
+import sys
 from typing import Any, Dict
 
 from discord_webhook import DiscordWebhook
 from requests import Response
 from twitchAPI.eventsub import EventSub
 from twitchAPI.twitch import Twitch
+from twitchAPI.types import EventSubSubscriptionTimeout
 
 from twitch_online_notifier.settings import Settings, get_settings
 
@@ -67,7 +69,16 @@ async def main() -> None:
     async for user in twitch.get_users(logins=settings.usernames):
         logging.info("Listening for events for '%s'...", user.login)
         if user.id:
-            await event_sub.listen_stream_online(user.id, on_live)  # type: ignore
+            try:
+                await event_sub.listen_stream_online(user.id, on_live)  # type: ignore
+            except EventSubSubscriptionTimeout:
+                logging.error("EventSub timed out for user '%s'.", user.login)
+                send_message(
+                    f"twitch-online-notifier - ERROR: EventSub timed out for user '{user.login}'."
+                    f" Are you sure {settings.eventsub_url} is accessible from the internet?"
+                    " Is it on the same network as your reverse proxy?"
+                )
+                sys.exit(1)
         else:
             logging.error("User '%s' had no id.", user.login)
             send_message(f"twitch-online-notifier - ERROR: User '{user.login}' had no id.")
