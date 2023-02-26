@@ -32,7 +32,7 @@ ENV PATH="/home/botuser/.local/bin/:${PATH}"
 ADD --chown=botuser:botuser pyproject.toml poetry.lock README.md LICENSE /home/botuser/twitch-online-notifier/
 
 # Change directory to where we will run the bot.
-WORKDIR /home/botuser/twitch_online_notifier
+WORKDIR /home/botuser/twitch-online-notifier
 
 # Install the requirements.
 RUN poetry install --no-interaction --no-ansi --only main
