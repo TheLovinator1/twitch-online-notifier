@@ -49,7 +49,7 @@ async def on_live(data: Dict[str, Any]) -> None:
     logging.info("%s is live!", broadcaster_user_name)
     logging.info("\tURL: %s", broadcaster_url)
 
-    send_message(f"{broadcaster_user_name} is live! \n {broadcaster_url}")
+    send_message(f"{broadcaster_user_name} is live!\n{broadcaster_url}")
 
 
 async def main() -> None:
