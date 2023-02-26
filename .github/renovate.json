@@ -1,0 +1,33 @@
+{
+    "extends": [
+      "config:base"
+    ],
+    "packageRules": [
+      {
+        "matchUpdateTypes": [
+          "minor",
+          "patch",
+          "pin",
+          "digest",
+          "lockFileMaintenance"
+        ],
+        "automerge": true,
+        "automergeType": "pr",
+        "platformAutomerge": true
+      }
+    ],
+    "dependencyDashboard": false,
+    "enabledManagers": [
+      "dockerfile",
+      "docker-compose",
+      "poetry",
+      "github-actions"
+    ],
+    "lockFileMaintenance": {
+      "enabled": true,
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    "timezone": "Europe/Stockholm"
+  }

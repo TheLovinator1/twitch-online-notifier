@@ -1,0 +1,21 @@
+services:
+  twitch-online-notifier:
+    image: thelovinator/twitch-online-notifier
+    env_file:
+      - .env
+    container_name: twitch-online-notifier
+    environment:
+      - TWITCH_APP_ID=${TWITCH_APP_ID}
+      - TWITCH_APP_SECRET=${TWITCH_APP_SECRET}
+      - TWITCH_USERNAMES=${TWITCH_USERNAMES}
+      - EVENTSUB_URL=${EVENTSUB_URL}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+    restart: unless-stopped
+    expose:
+      - 8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
