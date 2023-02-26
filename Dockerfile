@@ -38,7 +38,7 @@ WORKDIR /home/botuser/twitch_online_notifier
 RUN poetry install --no-interaction --no-ansi --only main
 
 # Add main.py and settings.py to the container.
-ADD --chown=botuser:botuser twitter_image_collage_maker /home/botuser/twitch-online-notifier/twitch_online_notifier/
+ADD --chown=botuser:botuser twitch_online_notifier /home/botuser/twitch-online-notifier/twitch_online_notifier/
 EXPOSE 8080
 
 CMD [ "poetry", "run", "python", "/home/botuser/twitch-online-notifier/twitch_online_notifier/main.py" ]
