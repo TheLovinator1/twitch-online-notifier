@@ -609,14 +609,14 @@ files = [
 
 [[package]]
 name = "twitchapi"
-version = "3.9.0"
+version = "3.10.0"
 description = "A Python 3.7+ implementation of the Twitch Helix API, PubSub, EventSub and Chat"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "twitchAPI-3.9.0-py3-none-any.whl", hash = "sha256:09d0d69c79ce388afa49b90dc3f2980031bb9c7d3088ba26514d141f6599312c"},
-    {file = "twitchAPI-3.9.0.tar.gz", hash = "sha256:337265dc31af8d675ea9839698e49efd6f61f7266ae07546ac347ee6d117068c"},
+    {file = "twitchAPI-3.10.0-py3-none-any.whl", hash = "sha256:1ee2186506403d04d6113e6d45f5b3562e18f1588a119c88bffab2a6b3435ac5"},
+    {file = "twitchAPI-3.10.0.tar.gz", hash = "sha256:cd8700b8f55b3c0a86a4bc117c7a3333a453a47f42908ca394a8bd26daa9f6e8"},
 ]
 
 [package.dependencies]
