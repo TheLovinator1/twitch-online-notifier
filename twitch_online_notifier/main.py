@@ -1,4 +1,5 @@
 import asyncio
+import random
 import sys
 from typing import TYPE_CHECKING, Any
 
@@ -38,6 +39,26 @@ def send_message(message: str, if_error: bool = False) -> None:
         )
 
 
+def mexican_msg() -> str:
+    catch_phrases: list[str] = [
+        "¡Ándale, ándale, arriba, arriba!",
+        "¡Órale, güey!",
+        "¡Que padre!",
+        "¡Ay, caramba!",
+        "¡Viva México!",
+        "¡No hay bronca!",
+        "¡Chido, compadre!",
+        "¡A huevo!",
+        "¡Qué chula es mi tierra!",
+        "¡Ajúa!",
+    ]
+    emojis: list[str] = ["🌮", "🇲🇽", "🎊", "🎈", "💃", "🎸", "🌵", "🌶️", "🌯", "🔥"]
+    return (
+        f"{random.choice(emojis)} ¡WarframeInternational está en vivo!"  # noqa: S311
+        f" {random.choice(catch_phrases)}\nhttps://twitch.tv/warframeinternational"  # noqa: S311
+    )
+
+
 async def on_live(data: dict[str, Any]) -> None:
     """Called when a user goes live.
 
@@ -63,7 +84,10 @@ async def on_live(data: dict[str, Any]) -> None:
     logger.info(f"{broadcaster_user_name} is live!")
     logger.info(f"\tURL: {broadcaster_url}")
 
-    send_message(f"{broadcaster_user_name} is live!\n{broadcaster_url}")
+    if broadcaster_user_name == "warframeinternational":
+        send_message(mexican_msg())
+    else:
+        send_message(f"{broadcaster_user_name} is live!\n{broadcaster_url}")
 
 
 async def main() -> None:
