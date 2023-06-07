@@ -9,17 +9,18 @@ def test_get_settings() -> None:
 
     app_id: str | None = os.getenv("TWITCH_APP_ID")
     app_secret: str | None = os.getenv("TWITCH_APP_SECRET")
-    usernames: str | None = os.getenv("TWITCH_USERNAMES")
+    twitch_usernames: str | None = os.getenv("TWITCH_USERNAMES")
 
-    if usernames is None:
-        raise ValueError("TWITCH_USERNAMES must be set.")
+    if twitch_usernames is None:
+        msg = "TWITCH_USERNAMES must be set."
+        raise ValueError(msg)
 
-    username_list: list[str] = usernames.split(",")
+    usernames: list[str] = twitch_usernames.split(",")
     eventsub_url: str | None = os.getenv("EVENTSUB_URL")
     webhook_url: str | None = os.getenv("WEBHOOK_URL")
 
     assert settings.app_id == app_id
     assert settings.app_secret == app_secret
-    assert settings.usernames == username_list
+    assert settings.usernames == usernames
     assert settings.eventsub_url == eventsub_url
     assert settings.webhook_url == webhook_url

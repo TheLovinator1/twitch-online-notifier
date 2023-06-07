@@ -1,58 +1,73 @@
 import asyncio
-import logging
 import sys
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any
 
 from discord_webhook import DiscordWebhook
-from requests import Response
+from loguru import logger
 from twitchAPI.eventsub import EventSub
 from twitchAPI.twitch import Twitch
 from twitchAPI.types import EventSubSubscriptionTimeout
 
 from twitch_online_notifier.settings import Settings, get_settings
 
+if TYPE_CHECKING:
+    from requests import Response
+
 # Get the settings from the .env file.
 settings: Settings = get_settings()
 
 
-def send_message(message: str) -> None:
+def send_message(message: str, if_error: bool = False) -> None:
     """Send a message to the webhook.
 
     Args:
         message (str): The message to send.
+        if_error (bool, optional): If the message is an error message. Defaults to False. If True, the message will be
+            logged as an error.
     """
+    if if_error:
+        logger.error(message)
+
     webhook: DiscordWebhook = DiscordWebhook(url=settings.webhook_url, content=message)
     response: Response = webhook.execute()
 
-    if response.status_code != 200:
+    if not response.ok:
         send_message(
-            "Webhook failed when sending last message.\n"
-            f"Status code: '{response.status_code}'\n"
-            f"Message: '{message}' "
+            f"Webhook failed when sending last message.\nStatus code: '{response.status_code}'\nMessage: '{message}'",
+            if_error=True,
         )
 
 
-async def on_live(data: Dict[str, Any]) -> None:
+async def on_live(data: dict[str, Any]) -> None:
+    """Called when a user goes live.
+
+    Args:
+        data (dict[str, Any]): The data from the event.
+    """
     broadcaster_user_name: str = data["event"]["broadcaster_user_name"] or "Unknown"
     broadcaster_login: str = data["event"]["broadcaster_user_login"] or "Unknown"
-    broadcaster_url: str = f"https://twitch.tv/{broadcaster_login}" or "Unknown"
+    broadcaster_url: str = f"https://twitch.tv/{broadcaster_login}"
 
     # Report error if any of the values are Unknown.
     if "Unknown" in (broadcaster_user_name, broadcaster_login, broadcaster_url):
         send_message(
-            "twitch-online-notifier - ERROR: Unknown value in 'on_live' function.\n"
-            f"broadcaster_user_name: '{broadcaster_user_name}'\n"
-            f"broadcaster_login: '{broadcaster_login}'\n"
-            f"broadcaster_url: '{broadcaster_url}'"
+            (
+                "twitch-online-notifier - ERROR: Unknown value in 'on_live' function.\n"
+                f"broadcaster_user_name: '{broadcaster_user_name}'\n"
+                f"broadcaster_login: '{broadcaster_login}'\n"
+                f"broadcaster_url: '{broadcaster_url}'"
+            ),
+            if_error=True,
         )
 
-    logging.info("%s is live!", broadcaster_user_name)
-    logging.info("\tURL: %s", broadcaster_url)
+    logger.info(f"{broadcaster_user_name} is live!")
+    logger.info(f"\tURL: {broadcaster_url}")
 
     send_message(f"{broadcaster_user_name} is live!\n{broadcaster_url}")
 
 
 async def main() -> None:
+    """The main function."""
     # The Twitch API client.
     twitch: Twitch = await Twitch(settings.app_id, settings.app_secret)
 
@@ -62,32 +77,33 @@ async def main() -> None:
     # Unsubscribe from all subscriptions so we don't get duplicate events.
     await event_sub.unsubscribe_all()
 
-    # Start the EventSub server. If you go to http://localhost:8080/ in your browser, you should see a message saying "pyTwitchAPI eventsub".
+    # Start the EventSub server. If you go to http://localhost:8080/ in your browser, you should see a message saying "pyTwitchAPI eventsub". # noqa: E501
     event_sub.start()
 
     # Add a listener for the stream.online event for each user.
     async for user in twitch.get_users(logins=settings.usernames):
-        logging.info("Listening for events for '%s'...", user.login)
+        logger.info(f"Listening for events for '{user.login}'.")
         if user.id:
             try:
-                await event_sub.listen_stream_online(user.id, on_live)  # type: ignore
+                await event_sub.listen_stream_online(user.id, on_live)
             except EventSubSubscriptionTimeout:
-                logging.error("EventSub timed out for user '%s'.", user.login)
                 send_message(
-                    f"twitch-online-notifier - ERROR: EventSub timed out for user '{user.login}'."
-                    f" Are you sure {settings.eventsub_url} is accessible from the internet?"
-                    " Is it on the same network as your reverse proxy?"
+                    (
+                        f"twitch-online-notifier - ERROR: EventSub timed out for user '{user.login}'.\nYou should"
+                        " double check that the EventSub URL is correct, and that it is reachable from the internet.\n"
+                        "Is your container on the same network as your reverse proxy?"
+                    ),
+                    if_error=True,
                 )
                 sys.exit(1)
         else:
-            logging.error("User '%s' had no id.", user.login)
-            send_message(f"twitch-online-notifier - ERROR: User '{user.login}' had no id.")
+            send_message(f"twitch-online-notifier - ERROR: User '{user.login}' had no id.", if_error=True)
 
-    logging.info("I am now listening for events on %s :-)", settings.eventsub_url)
+    logger.info(f"I am now listening for events on {settings.eventsub_url} :-)")
 
 
 def start() -> None:
-    logging.basicConfig(level=logging.getLevelName("INFO"))
+    """Start the main function."""
     asyncio.run(main())
 
 

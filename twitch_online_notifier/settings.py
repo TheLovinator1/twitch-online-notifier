@@ -24,36 +24,40 @@ def get_settings() -> Settings:
     Returns:
         tuple[str, str]: The app id and app secret.
     """
-
     app_id: str | None = os.getenv("TWITCH_APP_ID")
     app_secret: str | None = os.getenv("TWITCH_APP_SECRET")
-    usernames: str | None = os.getenv("TWITCH_USERNAMES")
+    twitch_usernames: str | None = os.getenv("TWITCH_USERNAMES")
     eventsub_url: str | None = os.getenv("EVENTSUB_URL")
     webhook_url: str | None = os.getenv("WEBHOOK_URL")
-    username_list = []
+    usernames = []
 
-    if usernames is not None:
-        username_list: list[str] = usernames.split(",")
+    if twitch_usernames is not None:
+        usernames: list[str] = twitch_usernames.split(",")
 
-    if not username_list:
-        raise ValueError("TWITCH_USERNAMES must be set. See README.md for more information.")
+    if not usernames:
+        msg = "TWITCH_USERNAMES must be set. See README.md for more information."
+        raise ValueError(msg)
 
     if eventsub_url is None:
-        raise ValueError("EVENTSUB_URL must be set. See README.md for more information.")
+        msg = "EVENTSUB_URL must be set. See README.md for more information."
+        raise ValueError(msg)
 
     if webhook_url is None:
-        raise ValueError("WEBHOOK_URL must be set. See README.md for more information.")
+        msg = "WEBHOOK_URL must be set. See README.md for more information."
+        raise ValueError(msg)
 
     if app_id is None:
-        raise ValueError("TWITCH_APP_ID must be set. See README.md for more information.")
+        msg = "TWITCH_APP_ID must be set. See README.md for more information."
+        raise ValueError(msg)
 
     if app_secret is None:
-        raise ValueError("TWITCH_APP_SECRET must be set. See README.md for more information.")
+        msg = "TWITCH_APP_SECRET must be set. See README.md for more information."
+        raise ValueError(msg)
 
     return Settings(
         app_id=app_id,
         app_secret=app_secret,
-        usernames=username_list,
+        usernames=usernames,
         eventsub_url=eventsub_url,
         webhook_url=webhook_url,
     )

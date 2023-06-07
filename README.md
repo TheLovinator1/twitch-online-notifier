@@ -1,10 +1,14 @@
 # twitch-online-notifier
 
-Send a webhook to Discord when a stream goes online
+Send a webhook to Discord when a Twitch stream goes live.
+
+## If you can't host this yourself
+
+I can host this for you. Send me an email or Discord message with your Twitch usernames, Discord webhook URL and Twitch application client ID and secret.
 
 ## How it works
 
-Twitch will send a webhook to this server when a stream goes online. This server will then send a webhook to Discord.
+Twitch will send a webhook to this program when a stream goes live. This program will then send a webhook to Discord.
 
 ## Usage
 
@@ -29,7 +33,7 @@ Go to the [Twitch developer console](https://dev.twitch.tv/console/apps) and cre
 ### Nginx
 
 There is an example for Nginx called `eventsub.subdomain.conf` for all
-the swag users out there.
+the [swag](https://github.com/linuxserver/docker-swag) users out there.
 
 ## Help
 
