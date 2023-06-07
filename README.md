@@ -4,7 +4,7 @@ Send a webhook to Discord when a Twitch stream goes live.
 
 ## If you can't host this yourself
 
-I can host this for you. Send me an email or Discord message with your Twitch usernames, Discord webhook URL and Twitch application client ID and secret.
+Send me an email or Discord message with your Twitch usernames you want to track, your Discord webhook URL and Twitch application client ID and secret and I'll can host it for you.
 
 ## How it works
 
