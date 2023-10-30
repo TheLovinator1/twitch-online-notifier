@@ -72,12 +72,10 @@ async def on_live(data: dict[str, Any]) -> None:
     # Report error if any of the values are Unknown.
     if "Unknown" in (broadcaster_user_name, broadcaster_login, broadcaster_url):
         send_message(
-            (
-                "twitch-online-notifier - ERROR: Unknown value in 'on_live' function.\n"
-                f"broadcaster_user_name: '{broadcaster_user_name}'\n"
-                f"broadcaster_login: '{broadcaster_login}'\n"
-                f"broadcaster_url: '{broadcaster_url}'"
-            ),
+            "twitch-online-notifier - ERROR: Unknown value in 'on_live' function.\n"
+            f"broadcaster_user_name: '{broadcaster_user_name}'\n"
+            f"broadcaster_login: '{broadcaster_login}'\n"
+            f"broadcaster_url: '{broadcaster_url}'",
             if_error=True,
         )
 
@@ -112,11 +110,9 @@ async def main() -> None:
                 await event_sub.listen_stream_online(user.id, on_live)
             except EventSubSubscriptionTimeout:
                 send_message(
-                    (
-                        f"twitch-online-notifier - ERROR: EventSub timed out for user '{user.login}'.\nYou should"
-                        " double check that the EventSub URL is correct, and that it is reachable from the internet.\n"
-                        "Is your container on the same network as your reverse proxy?"
-                    ),
+                    f"twitch-online-notifier - ERROR: EventSub timed out for user '{user.login}'.\nYou should"
+                    " double check that the EventSub URL is correct, and that it is reachable from the internet.\n"
+                    "Is your container on the same network as your reverse proxy?",
                     if_error=True,
                 )
                 sys.exit(1)
