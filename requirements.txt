@@ -350,9 +350,9 @@ requests==2.31.0 ; python_version >= "3.11" and python_version < "4.0" \
 six==1.16.0 ; python_version >= "3.11" and python_version < "4.0" \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
-twitchapi==3.11.0 ; python_version >= "3.11" and python_version < "4.0" \
-    --hash=sha256:4e4433177da7b7cf6e06f0ba6a3fdbe5fd834243950f3ed4c9e517472558ba63 \
-    --hash=sha256:db148031a81e636af8428ed4e0eec7ded976dead57ef15e23752c9583eeea812
+twitchapi==4.0.1 ; python_version >= "3.11" and python_version < "4.0" \
+    --hash=sha256:5262294158c44cac0016b115a5ecc3943b21e40f7e07f3b9982b35e68666c32e \
+    --hash=sha256:f053345013510502f26d4fbcb5af5f20a647cb5738906534141a3d7a337020f7
 typing-extensions==4.8.0 ; python_version >= "3.11" and python_version < "4.0" \
     --hash=sha256:8f92fc8806f9a6b641eaa5318da32b44d401efaac0f6678c9bc448ba3605faa0 \
     --hash=sha256:df8e4339e9cb77357558cbdbceca33c303714cf861d1eef15e1070055ae8b7ef
