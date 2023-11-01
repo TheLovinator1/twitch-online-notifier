@@ -10,9 +10,9 @@ ENV PATH=/home/root/.local/bin:$PATH
 COPY pyproject.toml poetry.lock ./
 
 # Create a requirements.txt file
-RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes --without dev
 
-FROM python:3.12-slim
+FROM python:3.12
 
 # Create user so we don't run as root.
 RUN useradd --create-home botuser
@@ -27,7 +27,7 @@ WORKDIR /app
 COPY --from=builder ./requirements.txt .
 
 # Install the requirements
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project files
 ADD --chown=botuser:botuser twitch_online_notifier /app/twitch_online_notifier
