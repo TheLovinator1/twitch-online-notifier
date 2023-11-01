@@ -1,101 +1,41 @@
 [tool.poetry]
 name = "twitch-online-notifier"
-version = "0.1.0"
-description = ""
+version = "1.0.0"
+description = "A simple bot that notifies a Discord webhook when a Twitch channel goes online."
 authors = ["Joakim Hellsén <tlovinator@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
-python-dotenv = "^1.0.0"
-twitchapi = "^3.8.0"
-discord-webhook = "^1.1.0"
-loguru = "^0.7.0"
+python = "^3.12"
+python-dotenv = { version = "^1.0.0", allow-prereleases = true }
+aiohttp = { version = "^3.9.0b0", allow-prereleases = true }
+twitchapi = { version = "^4.0.1", allow-prereleases = true }
+discord-webhook = { version = "^1.3.0", allow-prereleases = true }
+loguru = { version = "^0.7.2", allow-prereleases = true }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.1"
-pytest-asyncio = "^0.22.0"
 pre-commit = "^3.3.2"
 
 [build-system]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-requires = [
-  "poetry-core",
-]
 
 [tool.poetry.scripts]
 bot = "twitch_online_notifier.main:start"
 
-[tool.isort]
-profile = "black"
-
-[tool.black]
-line-length = 120
-preview = true
-
 [tool.ruff]
-line-length = 120
-select = [
-    "E",
-    "F",
-    "B",
-    "W",
-    "C90",
-    "I",
-    "N",
-    "D",
-    "UP",
-    "YTT",
-    "ANN",
-    "S",
-    "BLE",
-    "FBT",
-    "A",
-    "COM",
-    "C4",
-    "DTZ",
-    "EM",
-    "EXE",
-    "ISC",
-    "ICN",
-    "G",
-    "INP",
-    "PIE",
-    "T20",
-    "PYI",
-    "PT",
-    "Q",
-    "RSE",
-    "RET",
-    "SLF",
-    "SIM",
-    "TID",
-    "TCH",
-    "ARG",
-    "PTH",
-    "ERA",
-    "PGH",
-    "PL",
-    "PLC",
-    "PLE",
-    "PLR",
-    "PLW",
-    "TRY",
-    "RUF",
-]
+select = ["ALL"]
+
 ignore = [
-    "D100",    # pydocstyle - missing docstring in public module
-    "D101",    # pydocstyle - missing docstring in public class
-    "D102",    # pydocstyle - missing docstring in public method
-    "D103",    # pydocstyle - missing docstring in public function
-    "D104",    # pydocstyle - missing docstring in public package
-    "D105",    # pydocstyle - missing docstring in magic method
-    "D106",    # pydocstyle - missing docstring in public nested class
-    "D107",    # pydocstyle - missing docstring in __init__
-    "PLE1205", # https://github.com/charliermarsh/ruff/issues/3351
-    "FBT001",  # Boolean positional arg in function definition
-    "FBT002",  # Boolean default value in function definition
-    "FBT003",  # Allow positional boolean values in function calls
+    "D100", # pydocstyle - missing docstring in public module
+    "D101", # pydocstyle - missing docstring in public class
+    "D102", # pydocstyle - missing docstring in public method
+    "D103", # pydocstyle - missing docstring in public function
+    "D104", # pydocstyle - missing docstring in public package
+    "D105", # pydocstyle - missing docstring in magic method
+    "D106", # pydocstyle - missing docstring in public nested class
+    "D107", # pydocstyle - missing docstring in __init__
 ]
 
 [tool.ruff.pydocstyle]
@@ -103,12 +43,3 @@ convention = "google"
 
 [tool.ruff.per-file-ignores]
 "tests/*" = ["S101", "SIM114"]
-
-[tool.pytest.ini_options]
-addopts = "-vvvvvv --exitfirst"
-filterwarnings = [
-    "ignore:'imghdr' is deprecated and slated for removal in Python 3.13:DeprecationWarning",
-    "ignore:'cgi' is deprecated and slated for removal in Python 3.13:DeprecationWarning",
-    "ignore: No parser was explicitly specified, so I'm using the best available HTML parser for this system",
-    "ignore: pkg_resources is deprecated as an API:DeprecationWarning",
-]
