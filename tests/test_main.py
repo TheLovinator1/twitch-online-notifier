@@ -22,7 +22,7 @@ async def test_on_live() -> None:
     data.event = StreamOnlineData()
     data.event.broadcaster_user_name = "broadcaster_user_name"
     data.event.broadcaster_user_login = "broadcaster_user_login"
-    data.event.started_at = datetime.datetime.now(tz=datetime.timezone.utc)
+    data.event.started_at = datetime.datetime.now(tz=datetime.UTC)
 
     await on_live(data)
 
