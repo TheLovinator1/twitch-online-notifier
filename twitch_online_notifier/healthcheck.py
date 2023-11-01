@@ -10,9 +10,11 @@ def healthcheck() -> None:
     sys.exit(0): success - the container is healthy and ready for use.
     sys.exit(1): unhealthy - the container is not working correctly.
     """
-    # TODO: We should check more than just that the website is up.
     try:
-        response: requests.Response = requests.get(url="http://localhost:8080", timeout=5)
+        response: requests.Response = requests.get(
+            url="http://localhost:8080",
+            timeout=5,
+        )
         if response.ok:
             logger.info("Healthcheck passed.")
             sys.exit(0)
