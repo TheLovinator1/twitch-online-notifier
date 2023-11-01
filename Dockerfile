@@ -26,6 +26,9 @@ WORKDIR /app
 # Copy the requirements.txt file from the builder stage
 COPY --from=builder ./requirements.txt .
 
+# Install the requirements
+RUN pip install -r requirements.txt
+
 # Copy project files
 ADD --chown=botuser:botuser twitch_online_notifier /app/twitch_online_notifier
 
