@@ -1,7 +1,9 @@
+import logging
 import sys
 
 import requests
-from loguru import logger
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def healthcheck() -> None:
@@ -19,7 +21,7 @@ def healthcheck() -> None:
             logger.info("Healthcheck passed.")
             sys.exit(0)
     except requests.exceptions.RequestException as e:
-        logger.critical(f"Healthcheck failed: {e}")
+        logger.critical(f"Healthcheck failed: {e}")  # noqa: G004
         sys.exit(1)
 
 

@@ -1,129 +1,124 @@
+from __future__ import annotations
+
 import asyncio
-import random
-import sys
-from typing import TYPE_CHECKING, Any
+import os
+from typing import TYPE_CHECKING
 
 from discord_webhook import DiscordWebhook
+from dotenv import find_dotenv, load_dotenv
 from loguru import logger
-from twitchAPI.eventsub import EventSub
+from twitchAPI.eventsub.webhook import EventSubWebhook
 from twitchAPI.twitch import Twitch
-from twitchAPI.types import EventSubSubscriptionTimeout
-
-from twitch_online_notifier.settings import Settings, get_settings
+from twitchAPI.type import (
+    EventSubSubscriptionConflict,
+    EventSubSubscriptionError,
+    EventSubSubscriptionTimeout,
+    TwitchAPIException,
+    TwitchBackendException,
+)
 
 if TYPE_CHECKING:
     from requests import Response
+    from twitchAPI.object.eventsub import StreamOnlineEvent
 
-# Get the settings from the .env file.
-settings: Settings = get_settings()
+load_dotenv(find_dotenv(), verbose=True)
+
+app_id: str | None = os.environ["TWITCH_APP_ID"]
+app_secret: str | None = os.environ["TWITCH_APP_SECRET"]
+twitch_usernames: str | None = os.environ["TWITCH_USERNAMES"]
+eventsub_url: str | None = os.environ["EVENTSUB_URL"]
+webhook_url: str | None = os.environ["WEBHOOK_URL"]
+
+usernames = []
+if twitch_usernames is not None:
+    usernames: list[str] = twitch_usernames.split(",")
 
 
-def send_message(message: str, if_error: bool = False) -> None:
+def send_message_to_discord(message: str, *, if_error: bool = False) -> None:
     """Send a message to the webhook.
 
     Args:
-        message (str): The message to send.
-        if_error (bool, optional): If the message is an error message. Defaults to False. If True, the message will be
-            logged as an error.
+        message: The message to send.
+        if_error: If the message is an error message.
     """
     if if_error:
         logger.error(message)
 
-    webhook: DiscordWebhook = DiscordWebhook(url=settings.webhook_url, content=message)
+    webhook: DiscordWebhook = DiscordWebhook(
+        url=webhook_url,
+        content=message,
+        rate_limit_retry=True,
+    )
     response: Response = webhook.execute()
 
     if not response.ok:
-        send_message(
-            f"Webhook failed when sending last message.\nStatus code: '{response.status_code}'\nMessage: '{message}'",
+        send_message_to_discord(
+            f"Webhook failed when sending last message.\nStatus code: '{response.status_code}'\nMessage: '{message}'",  # noqa: E501
             if_error=True,
         )
 
 
-def mexican_msg() -> str:
-    catch_phrases: list[str] = [
-        "¡Ándale, ándale, arriba, arriba!",
-        "¡Órale, güey!",
-        "¡Que padre!",
-        "¡Ay, caramba!",
-        "¡Viva México!",
-        "¡No hay bronca!",
-        "¡Chido, compadre!",
-        "¡A huevo!",
-        "¡Qué chula es mi tierra!",
-        "¡Ajúa!",
-    ]
-    emojis: list[str] = ["🌮", "🇲🇽", "🎊", "🎈", "💃", "🎸", "🌵", "🌶️", "🌯", "🔥"]
-    return (
-        f"{random.choice(emojis)} ¡WarframeInternational está en vivo!"  # noqa: S311
-        f" {random.choice(catch_phrases)}\nhttps://twitch.tv/warframeinternational"  # noqa: S311
-    )
-
-
-async def on_live(data: dict[str, Any]) -> None:
+async def on_live(data: StreamOnlineEvent) -> None:
     """Called when a user goes live.
 
     Args:
-        data (dict[str, Any]): The data from the event.
+        data: The data from the event.
     """
-    broadcaster_user_name: str = data["event"]["broadcaster_user_name"] or "Unknown"
-    broadcaster_login: str = data["event"]["broadcaster_user_login"] or "Unknown"
+    broadcaster_user_name: str = data.event.broadcaster_user_name
+    broadcaster_login: str = data.event.broadcaster_user_login
     broadcaster_url: str = f"https://twitch.tv/{broadcaster_login}"
-
-    # Report error if any of the values are Unknown.
-    if "Unknown" in (broadcaster_user_name, broadcaster_login, broadcaster_url):
-        send_message(
-            (
-                "twitch-online-notifier - ERROR: Unknown value in 'on_live' function.\n"
-                f"broadcaster_user_name: '{broadcaster_user_name}'\n"
-                f"broadcaster_login: '{broadcaster_login}'\n"
-                f"broadcaster_url: '{broadcaster_url}'"
-            ),
-            if_error=True,
-        )
 
     logger.info(f"{broadcaster_user_name} is live!")
     logger.info(f"\tURL: {broadcaster_url}")
 
-    if broadcaster_user_name == "warframeinternational":
-        send_message(mexican_msg())
-    else:
-        send_message(f"{broadcaster_user_name} is live!\n{broadcaster_url}")
+    send_message_to_discord(f"{broadcaster_user_name} is live!\n{broadcaster_url}")
+
+
+def send_twitch_error_message(exception: Exception) -> None:
+    """Send a message to Discord about a Twitch error.
+
+    Args:
+        exception: The exception that was raised.
+    """
+    msg = "Something went wrong."
+    if isinstance(exception, EventSubSubscriptionConflict):
+        msg = "You tried to subscribe to a EventSub subscription that already exists."
+    elif isinstance(exception, EventSubSubscriptionTimeout):
+        msg = "When the waiting for a confirmed EventSub subscription timed out."
+    elif isinstance(exception, EventSubSubscriptionError):
+        msg = "The subscription request was invalid."
+    elif isinstance(exception, TwitchBackendException):
+        msg = "I think the Twitch API is down? We tried to subscribe to a user but it failed."  # noqa: E501
+    send_message_to_discord("twitch-online-notifier - ERROR: " + msg, if_error=True)
 
 
 async def main() -> None:
     """The main function."""
-    # The Twitch API client.
-    twitch: Twitch = await Twitch(settings.app_id, settings.app_secret)
+    twitch: Twitch = await Twitch(app_id, app_secret)
+    eventsub = EventSubWebhook(
+        callback_url=eventsub_url,
+        port=8080,
+        twitch=twitch,
+    )
+    await eventsub.unsubscribe_all()
+    eventsub.start()
 
-    # Start the EventSub server on port 8080.
-    event_sub: EventSub = EventSub(settings.eventsub_url, settings.app_id, 8080, twitch)
-
-    # Unsubscribe from all subscriptions so we don't get duplicate events.
-    await event_sub.unsubscribe_all()
-
-    # Start the EventSub server. If you go to http://localhost:8080/ in your browser, you should see a message saying "pyTwitchAPI eventsub". # noqa: E501
-    event_sub.start()
-
-    # Add a listener for the stream.online event for each user.
-    async for user in twitch.get_users(logins=settings.usernames):
-        logger.info(f"Listening for events for '{user.login}'.")
-        if user.id:
+    try:
+        async for user in twitch.get_users(logins=usernames):
+            logger.info(f"Listening for events for '{user.login}'.")
             try:
-                await event_sub.listen_stream_online(user.id, on_live)
-            except EventSubSubscriptionTimeout:
-                send_message(
-                    (
-                        f"twitch-online-notifier - ERROR: EventSub timed out for user '{user.login}'.\nYou should"
-                        " double check that the EventSub URL is correct, and that it is reachable from the internet.\n"
-                        "Is your container on the same network as your reverse proxy?"
-                    ),
-                    if_error=True,
+                await eventsub.listen_stream_online(
+                    broadcaster_user_id=user.id,
+                    callback=on_live,
                 )
-                sys.exit(1)
-        else:
-            send_message(f"twitch-online-notifier - ERROR: User '{user.login}' had no id.", if_error=True)
+            except TwitchAPIException as e:
+                send_twitch_error_message(e)
+                continue
 
-    logger.info(f"I am now listening for events on {settings.eventsub_url} :-)")
+    except TwitchAPIException as e:
+        send_twitch_error_message(e)
+
+    logger.info(f"I am now listening for events on {eventsub_url} :-)")
 
 
 def start() -> None:
@@ -132,5 +127,4 @@ def start() -> None:
 
 
 if __name__ == "__main__":
-    # Run the main function.
     start()
