@@ -8,14 +8,20 @@ from twitch_online_notifier.healthcheck import healthcheck
 
 
 class TestHealthcheck(unittest.TestCase):
+    """Test the healthcheck function.
+
+    Args:
+        unittest: The unittest class.
+    """
+
     @patch("requests.get")
     @patch("sys.exit")
     def test_healthcheck_success(
-        self: Self,
+        self: Self,  # noqa: PLR6301
         mock_sys_exit: MagicMock,
         mock_requests_get: MagicMock,
     ) -> None:
-        # Fake a successful response from the website.
+        """Fake a successful response from the website."""
         mock_response = MagicMock()
         mock_response.ok = True
         mock_requests_get.return_value = mock_response
@@ -29,11 +35,11 @@ class TestHealthcheck(unittest.TestCase):
     @patch("requests.get")
     @patch("sys.exit")
     def test_healthcheck_failure(
-        self: Self,
+        self: Self,  # noqa: PLR6301
         mock_sys_exit: MagicMock,
         mock_requests_get: MagicMock,
     ) -> None:
-        # Fake a failed response from the website.
+        """Fake a failed response from the website."""
         mock_requests_get.side_effect = requests.exceptions.RequestException(
             "Connection error",
         )
