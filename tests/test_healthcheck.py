@@ -17,7 +17,7 @@ class TestHealthcheck(unittest.TestCase):
     @patch("requests.get")
     @patch("sys.exit")
     def test_healthcheck_success(
-        self: Self,  # noqa: PLR6301
+        self: Self,
         mock_sys_exit: MagicMock,
         mock_requests_get: MagicMock,
     ) -> None:
@@ -35,7 +35,7 @@ class TestHealthcheck(unittest.TestCase):
     @patch("requests.get")
     @patch("sys.exit")
     def test_healthcheck_failure(
-        self: Self,  # noqa: PLR6301
+        self: Self,
         mock_sys_exit: MagicMock,
         mock_requests_get: MagicMock,
     ) -> None:
