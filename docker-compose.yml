@@ -11,9 +11,3 @@ services:
     restart: unless-stopped
     expose:
       - 8080
-    healthcheck:
-      test: [ "CMD", "poetry", "run", "python", "twitch_online_notifier/healthcheck.py" ]
-      interval: 1m
-      timeout: 10s
-      retries: 3
-      start_period: 30s
