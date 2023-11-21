@@ -2,6 +2,10 @@
 
 Send a webhook to Discord when a Twitch stream goes live.
 
+<p align="center">
+    <img alt="Warframe is live!" src="https://github.com/TheLovinator1/twitch-online-notifier/blob/master/.github/example.png?raw=true" loading="lazy" width="50%" height="50%" />
+</p>
+
 ## How it works
 
 Twitch will send a webhook to this program when a stream goes live. This program will then send a webhook to Discord.
