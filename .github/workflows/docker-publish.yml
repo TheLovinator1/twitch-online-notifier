@@ -4,9 +4,7 @@ on:
   schedule:
     - cron: "27 6 * * *"
   push:
-    branches: [master]
   pull_request:
-    branches: [master]
   workflow_dispatch:
 env:
   EVENTSUB_URL: ${{ secrets.EVENTSUB_URL }}
