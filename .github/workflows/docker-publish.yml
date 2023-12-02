@@ -46,4 +46,6 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/thelovinator1/twitch-online-notifier:latest
+          tags: |
+            ghcr.io/thelovinator1/twitch-online-notifier:latest
+            ghcr.io/thelovinator1/twitch-online-notifier:master
