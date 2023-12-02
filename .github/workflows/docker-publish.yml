@@ -45,4 +45,5 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           context: .
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ghcr.io/thelovinator1/twitch-online-notifier:latest
