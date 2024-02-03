@@ -759,18 +759,18 @@ files = [
 
 [[package]]
 name = "twitchapi"
-version = "4.1.0"
+version = "4.2.0"
 description = "A Python 3.7+ implementation of the Twitch Helix API, PubSub, EventSub and Chat"
 optional = false
 python-versions = "*"
 files = [
-    {file = "twitchAPI-4.1.0-py3-none-any.whl", hash = "sha256:56917244cbc1d19ec8122638967added089c64783e84d86653c259bf0653d6f0"},
-    {file = "twitchAPI-4.1.0.tar.gz", hash = "sha256:b47d13646550aa5fea94b7f9b3cc1c9dd10384433a226b10930094d896e14cb7"},
+    {file = "twitchAPI-4.2.0-py3-none-any.whl", hash = "sha256:7b2337bed1f04859ca9f07ed766a4fa887a7ae14499a2725a894f5a830083b6a"},
+    {file = "twitchAPI-4.2.0.tar.gz", hash = "sha256:b62aed93723822839cbd144266c8ccbe7d21bad50e3c7c1fdfcc7673c735bfe6"},
 ]
 
 [package.dependencies]
-aiohttp = "*"
-python-dateutil = "*"
+aiohttp = ">=3.9.3"
+python-dateutil = ">=2.8.2"
 typing-extensions = "*"
 
 [[package]]
