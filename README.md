@@ -55,7 +55,7 @@ server {
 ```
 
 ### Caddy
-    
+
 ```caddyfile
 eventsub.example.com { # Change this to your domain
     reverse_proxy localhost:8080 # Your Docker container
