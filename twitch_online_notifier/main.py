@@ -4,7 +4,7 @@ import asyncio
 import os
 from typing import TYPE_CHECKING
 
-from discord_webhook import DiscordWebhook
+from discord_webhook import AsyncDiscordWebhook
 from dotenv import find_dotenv, load_dotenv
 from loguru import logger
 from twitchAPI.eventsub.webhook import EventSubWebhook
@@ -18,10 +18,9 @@ from twitchAPI.type import (
 )
 
 if TYPE_CHECKING:
-    from requests import Response
     from twitchAPI.object.eventsub import StreamOnlineEvent
 
-load_dotenv(find_dotenv(), verbose=True)
+load_dotenv(dotenv_path=find_dotenv(), verbose=True)
 
 app_id: str | None = os.environ["TWITCH_APP_ID"]
 app_secret: str | None = os.environ["TWITCH_APP_SECRET"]
@@ -34,7 +33,7 @@ if twitch_usernames is not None:
     usernames: list[str] = twitch_usernames.split(",")
 
 
-def send_message_to_discord(message: str, *, if_error: bool = False) -> None:
+async def send_message_to_discord(message: str, *, if_error: bool = False) -> None:
     """Send a message to the webhook.
 
     Args:
@@ -44,18 +43,12 @@ def send_message_to_discord(message: str, *, if_error: bool = False) -> None:
     if if_error:
         logger.error(message)
 
-    webhook: DiscordWebhook = DiscordWebhook(
+    webhook: AsyncDiscordWebhook = AsyncDiscordWebhook(
         url=webhook_url,
         content=message,
         rate_limit_retry=True,
     )
-    response: Response = webhook.execute()
-
-    if not response.ok:
-        send_message_to_discord(
-            f"Webhook failed when sending last message.\nStatus code: '{response.status_code}'\nMessage: '{message}'",  # noqa: E501
-            if_error=True,
-        )
+    await webhook.execute()
 
 
 async def on_live(data: StreamOnlineEvent) -> None:
@@ -71,10 +64,12 @@ async def on_live(data: StreamOnlineEvent) -> None:
     logger.info(f"{broadcaster_user_name} is live!")
     logger.info(f"\tURL: {broadcaster_url}")
 
-    send_message_to_discord(f"{broadcaster_user_name} is live!\n{broadcaster_url}")
+    await send_message_to_discord(
+        f"{broadcaster_user_name} is live!\n{broadcaster_url}",
+    )
 
 
-def send_twitch_error_message(exception: Exception) -> None:
+async def send_twitch_error_message(exception: Exception) -> None:
     """Send a message to Discord about a Twitch error.
 
     Args:
@@ -89,7 +84,10 @@ def send_twitch_error_message(exception: Exception) -> None:
         msg = "The subscription request was invalid."
     elif isinstance(exception, TwitchBackendException):
         msg = "I think the Twitch API is down? We tried to subscribe to a user but it failed."  # noqa: E501
-    send_message_to_discord("twitch-online-notifier - ERROR: " + msg, if_error=True)
+    await send_message_to_discord(
+        "twitch-online-notifier - ERROR: " + msg,
+        if_error=True,
+    )
 
 
 async def main() -> None:
@@ -112,11 +110,11 @@ async def main() -> None:
                     callback=on_live,
                 )
             except TwitchAPIException as e:
-                send_twitch_error_message(e)
+                await send_twitch_error_message(e)
                 continue
 
     except TwitchAPIException as e:
-        send_twitch_error_message(e)
+        await send_twitch_error_message(e)
 
     logger.info(f"I am now listening for events on {eventsub_url} :-)")
 

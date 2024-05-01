@@ -10,9 +10,10 @@ from twitch_online_notifier.main import (
 )
 
 
-def test_send_message() -> None:
+@pytest.mark.asyncio()
+async def test_send_message() -> None:
     """Test the send_message function."""
-    send_message_to_discord("Test message from twitch_online_notifier")
+    await send_message_to_discord("Test message from twitch_online_notifier")
 
 
 @pytest.mark.asyncio()
@@ -27,6 +28,7 @@ async def test_on_live() -> None:
     await on_live(data)
 
 
-def test_send_twitch_error_message() -> None:
+@pytest.mark.asyncio()
+async def test_send_twitch_error_message() -> None:
     """Test the send_twitch_error_message function."""
-    send_twitch_error_message(Exception())
+    await send_twitch_error_message(Exception())
