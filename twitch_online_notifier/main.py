@@ -58,12 +58,13 @@ def send_message_to_discord(message: str, *, if_error: bool = False) -> None:
         message: The message to send.
         if_error: If the message is an error message.
     """
+    webhook_to_use = webhook_url
     if if_error:
         logger.error(message)
         webhook_to_use: str = error_webhook_url
 
     webhook: DiscordWebhook = DiscordWebhook(
-        url=webhook_to_use or webhook_url,
+        url=webhook_to_use,
         content=message,
         rate_limit_retry=True,
     )
