@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sys
 from typing import TYPE_CHECKING
 
 from discord_webhook import DiscordWebhook
@@ -23,15 +24,31 @@ if TYPE_CHECKING:
 
 load_dotenv(find_dotenv(), verbose=True)
 
-app_id: str | None = os.environ["TWITCH_APP_ID"]
-app_secret: str | None = os.environ["TWITCH_APP_SECRET"]
-twitch_usernames: str | None = os.environ["TWITCH_USERNAMES"]
-eventsub_url: str | None = os.environ["EVENTSUB_URL"]
-webhook_url: str | None = os.environ["WEBHOOK_URL"]
+app_id: str = os.getenv("TWITCH_APP_ID", "")
+app_secret: str = os.getenv("TWITCH_APP_SECRET", "")
+twitch_usernames: str = os.getenv("TWITCH_USERNAMES", "")
+eventsub_url: str = os.getenv("EVENTSUB_URL", "")
+webhook_url: str = os.getenv("WEBHOOK_URL", "")
+error_webhook_url: str = os.getenv("ERROR_WEBHOOK_URL", "")
+
+if (
+    app_id == ""
+    or app_secret == ""
+    or twitch_usernames == ""
+    or eventsub_url == ""
+    or webhook_url == ""
+):
+    logger.error("Missing environment variables. Please check your .env file.")
+    sys.exit(1)
 
 usernames = []
 if twitch_usernames is not None:
     usernames: list[str] = twitch_usernames.split(",")
+
+logger.info("Starting twitch-online-notifier...")
+logger.info("Usernames to listen for:")
+for username in usernames:
+    logger.info(f"\t- {username}")
 
 
 def send_message_to_discord(message: str, *, if_error: bool = False) -> None:
@@ -43,9 +60,10 @@ def send_message_to_discord(message: str, *, if_error: bool = False) -> None:
     """
     if if_error:
         logger.error(message)
+        webhook_to_use: str = error_webhook_url
 
     webhook: DiscordWebhook = DiscordWebhook(
-        url=webhook_url,
+        url=webhook_to_use or webhook_url,
         content=message,
         rate_limit_retry=True,
     )

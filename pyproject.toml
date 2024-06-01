@@ -20,9 +20,7 @@ pytest-asyncio = { version = "^0.23.0" }
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
-requires = [
-  "poetry-core",
-]
+requires = ["poetry-core"]
 
 [tool.poetry.scripts]
 bot = "twitch_online_notifier.main:start"
@@ -33,10 +31,13 @@ preview = true
 fix = true
 unsafe-fixes = true
 lint.ignore = [
-  "D100",   # pydocstyle - missing docstring in public module
-  "D104",   # pydocstyle - missing docstring in public package
-  "D107",   # pydocstyle - missing docstring in __init__
-  "CPY001", # Missing copyright notice at top of file
+  "D100",    # pydocstyle - missing docstring in public module
+  "D104",    # pydocstyle - missing docstring in public package
+  "D107",    # pydocstyle - missing docstring in __init__
+  "CPY001",  # Missing copyright notice at top of file
+  "COM812",
+  "ISC001",
+  "PLC1901",
 ]
 
 [tool.ruff.lint.pydocstyle]

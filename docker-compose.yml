@@ -8,6 +8,7 @@ services:
       - TWITCH_USERNAMES=${TWITCH_USERNAMES}
       - EVENTSUB_URL=${EVENTSUB_URL}
       - WEBHOOK_URL=${WEBHOOK_URL}
+      - ERROR_WEBHOOK_URL=${ERROR_WEBHOOK_URL}
     restart: unless-stopped
     expose:
       - 8080

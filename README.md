@@ -22,13 +22,14 @@ The configuration is done via environment variables or a `.env` file.
 
 Go to the [Twitch developer console](https://dev.twitch.tv/console/apps) and create a new application. You need to set the redirect URL to `http://localhost` and the category to `Application Integration`.
 
-| Variable            | Description                                         | Example                                |
-| ------------------- | --------------------------------------------------- | -------------------------------------- |
-| `TWITCH_APP_ID`     | Your Twitch application client ID                   | `ah3pwocaw0b...8komm9vs6abuzq`         |
-| `TWITCH_APP_SECRET` | Your Twitch application client secret               | `04ml1373bss...d4kapi912e9i6h`         |
-| `TWITCH_USERNAMES`  | Comma-separated list of Twitch usernames to monitor | `warframe,warframeinternational`       |
-| `EVENTSUB_URL`      | The URL to listen for Twitch EventSub webhooks on   | `https://eventsub.example.com`         |
-| `WEBHOOK_URL`       | Discord webhook URL                                 | `https://discord.com/api/webhooks/...` |
+| Variable            | Description                                                           | Example                                |
+| ------------------- | --------------------------------------------------------------------- | -------------------------------------- |
+| `TWITCH_APP_ID`     | Your Twitch application client ID                                     | `ah3pwocaw0b...8komm9vs6abuzq`         |
+| `TWITCH_APP_SECRET` | Your Twitch application client secret                                 | `04ml1373bss...d4kapi912e9i6h`         |
+| `TWITCH_USERNAMES`  | Comma-separated list of Twitch usernames to monitor                   | `warframe,warframeinternational`       |
+| `EVENTSUB_URL`      | The URL to listen for Twitch EventSub webhooks on                     | `https://eventsub.example.com`         |
+| `WEBHOOK_URL`       | Discord webhook URL                                                   | `https://discord.com/api/webhooks/...` |
+| `ERROR_WEBHOOK_URL` | Optional: Send errors to this Discord webhook instead of the main one | `https://discord.com/api/webhooks/...` |
 
 ### Nginx
 
