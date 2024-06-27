@@ -801,13 +801,13 @@ files = [
 
 [[package]]
 name = "twitchapi"
-version = "4.2.0"
+version = "4.2.1"
 description = "A Python 3.7+ implementation of the Twitch Helix API, PubSub, EventSub and Chat"
 optional = false
 python-versions = "*"
 files = [
-    {file = "twitchAPI-4.2.0-py3-none-any.whl", hash = "sha256:7b2337bed1f04859ca9f07ed766a4fa887a7ae14499a2725a894f5a830083b6a"},
-    {file = "twitchAPI-4.2.0.tar.gz", hash = "sha256:b62aed93723822839cbd144266c8ccbe7d21bad50e3c7c1fdfcc7673c735bfe6"},
+    {file = "twitchAPI-4.2.1-py3-none-any.whl", hash = "sha256:9b8f69c20d0f148ea1efd40323414e0d8e10b140a7c4b42f25d6a85f648c094b"},
+    {file = "twitchapi-4.2.1.tar.gz", hash = "sha256:24c73893d891ddfc82d147937044df92f2c5deacee8c4b6c912633989e290c8c"},
 ]
 
 [package.dependencies]
