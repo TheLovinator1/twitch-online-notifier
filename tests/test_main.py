@@ -15,7 +15,7 @@ def test_send_message() -> None:
     send_message_to_discord("Test message from twitch_online_notifier")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_on_live() -> None:
     """Test the on_live function."""
     data = StreamOnlineEvent()
