@@ -316,6 +316,25 @@ files = [
 ]
 
 [[package]]
+name = "enum-tools"
+version = "0.12.0"
+description = "Tools to expand Python's enum module."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "enum_tools-0.12.0-py3-none-any.whl", hash = "sha256:d69b019f193c7b850b17d9ce18440db7ed62381571409af80ccc08c5218b340a"},
+    {file = "enum_tools-0.12.0.tar.gz", hash = "sha256:13ceb9376a4c5f574a1e7c5f9c8eb7f3d3fbfbb361cc18a738df1a58dfefd460"},
+]
+
+[package.dependencies]
+pygments = ">=2.6.1"
+typing-extensions = ">=3.7.4.3"
+
+[package.extras]
+all = ["sphinx (>=3.4.0)", "sphinx-jinja2-compat (>=0.1.1)", "sphinx-toolbox (>=2.16.0)"]
+sphinx = ["sphinx (>=3.4.0)", "sphinx-jinja2-compat (>=0.1.1)", "sphinx-toolbox (>=2.16.0)"]
+
+[[package]]
 name = "filelock"
 version = "3.14.0"
 description = "A platform independent file lock."
@@ -642,6 +661,20 @@ pyyaml = ">=5.1"
 virtualenv = ">=20.10.0"
 
 [[package]]
+name = "pygments"
+version = "2.18.0"
+description = "Pygments is a syntax highlighting package written in Python."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pygments-2.18.0-py3-none-any.whl", hash = "sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a"},
+    {file = "pygments-2.18.0.tar.gz", hash = "sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199"},
+]
+
+[package.extras]
+windows-terminal = ["colorama (>=0.4.6)"]
+
+[[package]]
 name = "pytest"
 version = "8.3.2"
 description = "pytest: simple powerful testing with Python"
@@ -828,17 +861,18 @@ files = [
 
 [[package]]
 name = "twitchapi"
-version = "4.2.1"
+version = "4.3.0"
 description = "A Python 3.7+ implementation of the Twitch Helix API, PubSub, EventSub and Chat"
 optional = false
 python-versions = "*"
 files = [
-    {file = "twitchAPI-4.2.1-py3-none-any.whl", hash = "sha256:9b8f69c20d0f148ea1efd40323414e0d8e10b140a7c4b42f25d6a85f648c094b"},
-    {file = "twitchapi-4.2.1.tar.gz", hash = "sha256:24c73893d891ddfc82d147937044df92f2c5deacee8c4b6c912633989e290c8c"},
+    {file = "twitchAPI-4.3.0-py3-none-any.whl", hash = "sha256:676ba3fdf3c2c705db1bf2be268c88ae7f7fbcbb5688a6d9ec561d2d5e109fd1"},
+    {file = "twitchapi-4.3.0.tar.gz", hash = "sha256:b14ad24dd969466e76f0428cd1d6742f8653bc3f0bc145aa6dc485ced24d31f5"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.9.3"
+enum-tools = "*"
 python-dateutil = ">=2.8.2"
 typing-extensions = "*"
 
