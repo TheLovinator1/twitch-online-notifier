@@ -17,7 +17,7 @@ twitchapi = { version = "^4.2.0" }
 pre-commit = "^4.0.0"
 pytest = "^8.2.1"
 pytest-asyncio = { version = "^0.24.0" }
-ruff = "^0.6.0"
+ruff = "^0.7.0"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
