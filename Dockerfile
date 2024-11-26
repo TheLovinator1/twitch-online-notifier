@@ -1,4 +1,4 @@
-FROM python:3.13-slim as builder
+FROM python:3.13-slim AS builder
 
 # Install Poetry
 RUN pip install poetry
@@ -33,5 +33,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 ADD --chown=botuser:botuser twitch_online_notifier /app/twitch_online_notifier
 
 # Run the bot
-ENV PYTHONPATH "${PYTHONPATH}:/app/twitch_online_notifier"
+ENV PYTHONPATH="${PYTHONPATH}:/app/twitch_online_notifier"
 CMD [ "python", "twitch_online_notifier/main.py" ]
