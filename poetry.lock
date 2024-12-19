@@ -991,20 +991,20 @@ files = [
 
 [[package]]
 name = "twitchapi"
-version = "4.3.1"
+version = "4.4.0"
 description = "A Python 3.7+ implementation of the Twitch Helix API, PubSub, EventSub and Chat"
 optional = false
 python-versions = "*"
 files = [
-    {file = "twitchAPI-4.3.1-py3-none-any.whl", hash = "sha256:f97b0609e68552aa7c46953b5fe7c686580bd775c74a4bd59c36d7579f76e547"},
-    {file = "twitchapi-4.3.1.tar.gz", hash = "sha256:29f87014cce9e9352356f9ec5c4573bb397599cc2a9ba96d7c547063041163ee"},
+    {file = "twitchAPI-4.4.0-py3-none-any.whl", hash = "sha256:087939a4891a447aee5d1ab564da8ad3a984b580b0708ab9c59afd93b9a3d5da"},
+    {file = "twitchapi-4.4.0.tar.gz", hash = "sha256:4aa005972b72b7d254f01bf8cdc1a98986c6c0c007808e2c0235f1b2a54cfe47"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.9.3"
 enum-tools = "*"
 python-dateutil = ">=2.8.2"
-typing-extensions = "*"
+typing_extensions = "*"
 
 [[package]]
 name = "typing-extensions"
