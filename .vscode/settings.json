@@ -2,7 +2,9 @@
   "cSpell.words": [
     "botuser",
     "caddyfile",
+    "dotenv",
+    "eventsub",
     "pipx",
     "PYTHONPATH"
-]
+  ]
 }

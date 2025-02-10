@@ -1,3 +1,21 @@
+[project]
+name = "twitch-online-notifier"
+version = "1.0.0"
+description = "A simple bot that notifies a Discord webhook when a Twitch channel goes online."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "aiohttp",
+  "discord-webhook",
+  "python-dotenv",
+  "sentry-sdk",
+  "twitchapi",
+]
+
+[dependency-groups]
+dev = ["pytest", "pytest-asyncio"]
+
+
 [tool.poetry]
 name = "twitch-online-notifier"
 version = "1.0.0"
@@ -7,17 +25,15 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-aiohttp = { version = "^3.11.7" }
-discord-webhook = { version = "^1.3.1" }
-loguru = { version = "^0.7.2" }
-python-dotenv = { version = "^1.0.1" }
-twitchapi = { version = "^4.3.1" }
+aiohttp = {version = "*"}
+discord-webhook = {version = "*"}
+python-dotenv = {version = "*"}
+sentry-sdk = {version = "*"}
+twitchapi = {version = "*"}
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "^4.0.1"
-pytest = "^8.3.3"
-pytest-asyncio = { version = "^0.25.0" }
-ruff = "^0.9.0"
+pytest = "*"
+pytest-asyncio = {version = "*"}
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
@@ -27,22 +43,54 @@ requires = ["poetry-core"]
 bot = "twitch_online_notifier.main:start"
 
 [tool.ruff]
-lint.select = ["ALL"]
 preview = true
-fix = true
-unsafe-fixes = true
+line-length = 120
+lint.select = ["ALL"]
+lint.pydocstyle.convention = "google"
+lint.isort.required-imports = ["from __future__ import annotations"]
+lint.pycodestyle.ignore-overlong-task-comments = true
 lint.ignore = [
-  "D100",    # pydocstyle - missing docstring in public module
-  "D104",    # pydocstyle - missing docstring in public package
-  "D107",    # pydocstyle - missing docstring in __init__
-  "CPY001",  # Missing copyright notice at top of file
-  "COM812",
-  "ISC001",
-  "PLC1901",
+  "CPY001", # Checks for the absence of copyright notices within Python files.
+  "D100",   # Checks for undocumented public module definitions.
+  "D101",   # Checks for undocumented public class definitions.
+  "D104",   # Checks for undocumented public package definitions.
+  "D106",   # Checks for undocumented public class definitions, for nested classes.
+  "D107",   # Checks for public __init__ method definitions that are missing docstrings.
+  "ERA001", # Checks for commented-out Python code.
+  "FIX002", # Checks for "TODO" comments.
+
+  # Conflicting lint rules when using Ruff's formatter
+  # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+  "COM812", # Checks for the absence of trailing commas.
+  "COM819", # Checks for the presence of prohibited trailing commas.
+  "D206",   # Checks for docstrings that are indented with tabs.
+  "D300",   # Checks for docstrings that use '''triple single quotes''' instead of """triple double quotes""".
+  "E111",   # Checks for indentation with a non-multiple of 4 spaces.
+  "E114",   # Checks for indentation of comments with a non-multiple of 4 spaces.
+  "E117",   # Checks for over-indented code.
+  "ISC001", # Checks for implicitly concatenated strings on a single line.
+  "ISC002", # Checks for implicitly concatenated strings that span multiple lines.
+  "Q000",   # Checks for inline strings that use single quotes or double quotes, depending on the value of the lint.flake8-quotes.inline-quotes option.
+  "Q001",   # Checks for multiline strings that use single quotes or double quotes, depending on the value of the lint.flake8-quotes.multiline-quotes setting.
+  "Q002",   # Checks for docstrings that use single quotes or double quotes, depending on the value of the lint.flake8-quotes.docstring-quotes setting.
+  "Q003",   # Checks for strings that include escaped quotes, and suggests changing the quote style to avoid the need to escape them.
+  "W191",   # Checks for indentation that uses tabs.
 ]
 
-[tool.ruff.lint.pydocstyle]
-convention = "google"
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 20
+
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "SIM114"]
+"**/test_*.py" = [
+  "ARG",     # Unused function args -> fixtures nevertheless are functionally relevant...
+  "FBT",     # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+  "PLR2004", # Magic value used in comparison, ...
+  "S101",    # asserts allowed in tests...
+  "S311",    # Standard pseudo-random generators are not suitable for cryptographic purposes
+]
+
+[tool.pytest.ini_options]
+python_files = ["test_*.py"]
