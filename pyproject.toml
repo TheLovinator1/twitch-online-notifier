@@ -12,9 +12,6 @@ dependencies = [
   "twitchapi",
 ]
 
-[dependency-groups]
-dev = ["pytest", "pytest-asyncio"]
-
 
 [tool.poetry]
 name = "twitch-online-notifier"
@@ -30,10 +27,6 @@ discord-webhook = {version = "*"}
 python-dotenv = {version = "*"}
 sentry-sdk = {version = "*"}
 twitchapi = {version = "*"}
-
-[tool.poetry.group.dev.dependencies]
-pytest = "*"
-pytest-asyncio = {version = "*"}
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
@@ -75,21 +68,6 @@ lint.ignore = [
   "Q002",   # Checks for docstrings that use single quotes or double quotes, depending on the value of the lint.flake8-quotes.docstring-quotes setting.
   "Q003",   # Checks for strings that include escaped quotes, and suggests changing the quote style to avoid the need to escape them.
   "W191",   # Checks for indentation that uses tabs.
-]
-
-
-[tool.ruff.format]
-docstring-code-format = true
-docstring-code-line-length = 20
-
-
-[tool.ruff.lint.per-file-ignores]
-"**/test_*.py" = [
-  "ARG",     # Unused function args -> fixtures nevertheless are functionally relevant...
-  "FBT",     # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
-  "PLR2004", # Magic value used in comparison, ...
-  "S101",    # asserts allowed in tests...
-  "S311",    # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
 
 [tool.pytest.ini_options]

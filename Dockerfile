@@ -1,37 +1,14 @@
-FROM python:3.13-slim AS builder
-
-# Install Poetry
-RUN pip install poetry
-
-# Add /home/root/.local/bin to the PATH
-ENV PATH=/home/root/.local/bin:$PATH
-
-# Copy pyproject.toml and poetry.lock
-COPY pyproject.toml poetry.lock ./
-
-# Create a requirements.txt file
-RUN poetry export -f requirements.txt --output requirements.txt --without-hashes --without dev
-
-FROM python:3.13
-
-# Create user so we don't run as root.
+FROM python:3.13-slim
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN useradd --create-home botuser
-
-# Change to the user we created.
 USER botuser
-
-# Change directory to where we will run the bot.
 WORKDIR /app
+COPY --chown=botuser:botuser twitch_online_notifier /app/twitch_online_notifier
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --no-install-project \
+    && uv check --verbose
 
-# Copy the requirements.txt file from the builder stage
-COPY --from=builder ./requirements.txt .
-
-# Install the requirements
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy project files
-ADD --chown=botuser:botuser twitch_online_notifier /app/twitch_online_notifier
-
-# Run the bot
-ENV PYTHONPATH="${PYTHONPATH}:/app/twitch_online_notifier"
-CMD [ "python", "twitch_online_notifier/main.py" ]
+CMD [ "uv", "run", "twitch_online_notifier/main.py" ]

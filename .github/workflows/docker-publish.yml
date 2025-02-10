@@ -1,29 +1,29 @@
 name: Test and build Docker image
 
 on:
-  schedule:
-    - cron: "27 6 * * *"
   push:
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
 env:
   EVENTSUB_URL: ${{ secrets.EVENTSUB_URL }}
   TWITCH_APP_ID: ${{ secrets.TWITCH_APP_ID }}
   TWITCH_APP_SECRET: ${{ secrets.TWITCH_APP_SECRET }}
   TWITCH_USERNAMES: ${{ secrets.TWITCH_USERNAMES }}
   WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+
 jobs:
-  test:
+  ruff:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/ruff-action@v3
         with:
-          python-version: "3.12"
-      - run: pipx install poetry
-      - run: poetry install
-      - run: poetry run pytest
-
+          version: "latest"
+      - run: ruff check --exit-non-zero-on-fix --verbose
+      - run: ruff format --check --verbose
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -33,9 +33,12 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
-    needs: test
+    needs: ruff
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
@@ -45,6 +48,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
+          platforms: linux/amd64, linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ghcr.io/thelovinator1/twitch-online-notifier:latest
