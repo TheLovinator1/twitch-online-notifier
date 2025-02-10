@@ -24,6 +24,11 @@ if TYPE_CHECKING:
     from twitchAPI.object.eventsub import StreamOnlineEvent
 
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    stream=sys.stdout,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger: logging.Logger = logging.getLogger(__name__)
 
 sentry_sdk.init(
