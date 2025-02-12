@@ -7,7 +7,7 @@ import sys
 from typing import TYPE_CHECKING
 
 import sentry_sdk
-from discord_webhook import DiscordWebhook
+from discord_webhook import AsyncDiscordWebhook
 from dotenv import load_dotenv
 from twitchAPI.eventsub.webhook import EventSubWebhook
 from twitchAPI.twitch import Twitch
@@ -20,7 +20,6 @@ from twitchAPI.type import (
 )
 
 if TYPE_CHECKING:
-    from requests import Response
     from twitchAPI.object.eventsub import StreamOnlineEvent
 
 
@@ -51,7 +50,7 @@ if not app_id or not app_secret or not twitch_usernames or not eventsub_url or n
     logger.error("Missing environment variables. Please check your .env file.")
     sys.exit(1)
 
-usernames: list[str] = twitch_usernames.split(",")
+usernames: list[str] = [username.strip() for username in twitch_usernames.split(",") if username.strip()]
 
 logger.info("Starting twitch-online-notifier...")
 logger.info("Usernames to listen for:")
@@ -59,34 +58,22 @@ for username in usernames:
     logger.info("\t- %s", username)
 
 
-def send_message_to_discord(message: str, *, if_error: bool = False) -> None:
+async def send_message_to_discord(message: str) -> None:
     """Send a message to the webhook.
 
     Args:
         message: The message to send.
-        if_error: If the message is an error message.
     """
-    webhook_to_use: str = webhook_url
-    if if_error:
-        logger.error(message)
-        webhook_to_use = error_webhook_url or webhook_url
+    sentry_sdk.add_breadcrumb(message=message)
+    webhook = AsyncDiscordWebhook(url=webhook_url, content=message, rate_limit_retry=True)
 
-    webhook: DiscordWebhook = DiscordWebhook(url=webhook_to_use, content=message, rate_limit_retry=True)
-    response: Response = webhook.execute()
+    sentry_sdk.add_breadcrumb(message="Sending message to Discord...")
+    await webhook.execute()  # pyright: ignore[reportUnknownMemberType]
 
-    if not response.ok:
-        logger.error(
-            "Webhook failed when sending last message.\nStatus code: '%s'\nMessage: '%s'",
-            response.status_code,
-            message,
-        )
-        send_message_to_discord(
-            f"Webhook failed when sending last message.\nStatus code: '{response.status_code}'\nMessage: '{message}'",
-            if_error=True,
-        )
+    sentry_sdk.add_breadcrumb(message="Message sent to Discord")
 
 
-async def on_live(data: StreamOnlineEvent) -> None:  # noqa: RUF029
+async def on_live(data: StreamOnlineEvent) -> None:
     """Called when a user goes live.
 
     Args:
@@ -99,54 +86,102 @@ async def on_live(data: StreamOnlineEvent) -> None:  # noqa: RUF029
     logger.info("%s is live!", broadcaster_user_name)
     logger.info("\t%s", broadcaster_url)
 
-    send_message_to_discord(f"{broadcaster_user_name} is live!\n{broadcaster_url}")
+    await send_message_to_discord(f"{broadcaster_user_name} is live!\n{broadcaster_url}")
 
 
-def send_twitch_error_message(exception: Exception) -> None:
+async def send_err_msg(exception: Exception, msg: str, extra_info: dict[str, str]) -> None:
     """Send a message to Discord about a Twitch error.
 
     Args:
         exception: The exception that was raised.
+        msg: A message describing the error.
+        extra_info: Additional information to include in the message.
     """
-    msg = "Something went wrong."
-    if isinstance(exception, EventSubSubscriptionConflict):
-        msg = "You tried to subscribe to a EventSub subscription that already exists."
-    elif isinstance(exception, EventSubSubscriptionTimeout):
-        msg = "When the waiting for a confirmed EventSub subscription timed out."
-    elif isinstance(exception, EventSubSubscriptionError):
-        msg = "The subscription request was invalid."
-    elif isinstance(exception, TwitchBackendException):
-        msg = "I think the Twitch API is down? We tried to subscribe to a user but it failed."
-    send_message_to_discord("twitch-online-notifier - ERROR: " + msg, if_error=True)
+    sentry_sdk.capture_exception(exception)
+    if msg:
+        logger.error(msg)
+        sentry_sdk.capture_message(msg)
+
+    for key, value in extra_info.items():
+        sentry_sdk.set_tag(key, value)
+
+    sentry_sdk.set_tag("type", "twitch_error")
+    sentry_sdk.set_tag("app_id", app_id)
+    sentry_sdk.set_tag("app_secret", app_secret)
+    sentry_sdk.set_tag("eventsub_url", eventsub_url)
+    sentry_sdk.set_tag("webhook_url", webhook_url)
+    sentry_sdk.set_tag("error_webhook_url", error_webhook_url)
+    sentry_sdk.set_tag("msg", msg)
+
+    webhook = AsyncDiscordWebhook(
+        url=error_webhook_url or webhook_url,
+        content=f"twitch-online-notifier - ERROR: {msg}",
+        rate_limit_retry=True,
+    )
+    await webhook.execute()  # pyright: ignore[reportUnknownMemberType]
 
 
 async def main() -> None:
     """The main function."""
     twitch: Twitch = await Twitch(app_id, app_secret)
-    eventsub = EventSubWebhook(
-        callback_url=eventsub_url,
-        port=8080,
-        twitch=twitch,
-    )
+    eventsub = EventSubWebhook(callback_url=eventsub_url, port=8080, twitch=twitch)
     await eventsub.unsubscribe_all()
     eventsub.start()
 
-    try:
-        async for user in twitch.get_users(logins=usernames):
-            logger.info("Listening for events for '%s' (%s)", user.display_name, user.id)
-            try:
-                await eventsub.listen_stream_online(
-                    broadcaster_user_id=user.id,
-                    callback=on_live,
-                )
-            except TwitchAPIException as e:
-                send_twitch_error_message(e)
-                continue
+    async for user in twitch.get_users(logins=usernames):
+        logger.info("Listening for events for '%s' (%s)", user.display_name, user.id)
+        sentry_sdk.add_breadcrumb(message=f"Listening for events for '{user.display_name}' ({user.id})")
 
-    except TwitchAPIException as e:
-        send_twitch_error_message(e)
+        sentry_sdk.set_user({
+            "id": user.id,
+            "username": user.display_name,
+            "type": user.type,
+            "broadcaster_type": user.broadcaster_type,
+            "description": user.description,
+            "profile_image_url": user.profile_image_url,
+            "offline_image_url": user.offline_image_url,
+            "view_count": user.view_count,
+            "email": user.email,
+            "created_at": user.created_at,
+        })
+
+        try:
+            await eventsub.listen_stream_online(broadcaster_user_id=user.id, callback=on_live)
+        except EventSubSubscriptionConflict as e:
+            await send_err_msg(
+                exception=e,
+                msg=f"User '{user.display_name}' is already being listened for.",
+                extra_info={"name": user.display_name},
+            )
+        except EventSubSubscriptionTimeout as e:
+            await send_err_msg(
+                exception=e,
+                msg=f"Timeout occurred while subscribing to user '{user.display_name}'.",
+                extra_info={"name": user.display_name},
+            )
+        except EventSubSubscriptionError as e:
+            await send_err_msg(
+                exception=e,
+                msg=f"The subscription request was invalid for '{user.display_name}'.",
+                extra_info={"name": user.display_name},
+            )
+        except TwitchBackendException as e:
+            await send_err_msg(
+                exception=e,
+                msg=f"Twitch backend error occurred for user '{user.display_name}'.",
+                extra_info={"name": user.display_name},
+            )
+        except TwitchAPIException as e:
+            await send_err_msg(
+                exception=e,
+                msg=f"Twitch API error occurred for user '{user.display_name}'.",
+                extra_info={"name": user.display_name},
+            )
 
     logger.info("I am now listening for events on %s", eventsub_url)
+    sentry_sdk.add_breadcrumb(message=f"I am now listening for events on {eventsub_url}")
+
+    await eventsub.stop()
 
 
 def start() -> None:
