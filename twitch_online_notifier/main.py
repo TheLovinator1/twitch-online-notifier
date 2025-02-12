@@ -126,6 +126,9 @@ async def main() -> None:
     twitch: Twitch = await Twitch(app_id, app_secret)
     eventsub = EventSubWebhook(callback_url=eventsub_url, port=8080, twitch=twitch)
     await eventsub.unsubscribe_all()
+    logger.info("Waiting for cancellations to propagate...")
+    await asyncio.sleep(5)  # Wait 5 seconds before subscribing again
+
     eventsub.start()
 
     async for user in twitch.get_users(logins=usernames):
