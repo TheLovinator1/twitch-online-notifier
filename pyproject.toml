@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "aiohttp",
-  "discord-webhook",
+  "discord-webhook[async]",
   "python-dotenv",
   "sentry-sdk",
   "twitchapi",
@@ -23,7 +23,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 aiohttp = {version = "*"}
-discord-webhook = {version = "*"}
+discord-webhook = {version = "*", extras = ["async"]}
 python-dotenv = {version = "*"}
 sentry-sdk = {version = "*"}
 twitchapi = {version = "*"}
