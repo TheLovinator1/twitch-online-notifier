@@ -184,8 +184,6 @@ async def main() -> None:
     logger.info("I am now listening for events on %s", eventsub_url)
     sentry_sdk.add_breadcrumb(message=f"I am now listening for events on {eventsub_url}")
 
-    await eventsub.stop()
-
 
 def start() -> None:
     """Start the main function."""
