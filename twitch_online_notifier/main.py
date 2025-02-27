@@ -4,13 +4,13 @@ import asyncio
 import logging
 import os
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
 from discord_webhook import DiscordWebhook
 from dotenv import load_dotenv
 from twitchAPI.eventsub.webhook import EventSubWebhook
-from twitchAPI.twitch import Twitch
+from twitchAPI.twitch import Twitch, TwitchUser
 from twitchAPI.type import (
     EventSubSubscriptionConflict,
     EventSubSubscriptionError,
@@ -20,6 +20,8 @@ from twitchAPI.type import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from twitchAPI.object.eventsub import StreamOnlineEvent
 
 
@@ -121,13 +123,48 @@ def send_err_msg(exception: Exception, msg: str, extra_info: dict[str, str]) -> 
     webhook.execute()
 
 
+async def subscribe_with_retry(
+    eventsub: EventSubWebhook,
+    user: TwitchUser,
+    callback: Callable[..., Any],
+    max_retries: int = 5,
+    delay: int = 5,
+) -> None:
+    """Subscribe with retry on EventSubSubscriptionTimeout errors.
+
+    Args:
+        eventsub: The EventSubWebhook instance.
+        user: The user object.
+        callback: The callback to handle events.
+        max_retries: Maximum number of attempts.
+        delay: Delay in seconds between attempts.
+    """
+    for attempt in range(1, max_retries + 1):
+        logger.info("Subscribing to user '%s' (attempt %s/%s)", user.display_name, attempt, max_retries)
+        try:
+            await eventsub.listen_stream_online(broadcaster_user_id=user.id, callback=callback)
+        except EventSubSubscriptionTimeout as e:
+            if attempt < max_retries:
+                await asyncio.sleep(delay)
+            else:
+                send_err_msg(
+                    exception=e,
+                    msg=f"Timeout occurred while subscribing to user '{user.display_name}' after {max_retries} attempts.",  # noqa: E501
+                    extra_info={"name": user.display_name},
+                )
+        else:
+            return  # Success
+
+
 async def main() -> None:
     """The main function."""
     twitch: Twitch = await Twitch(app_id, app_secret)
     eventsub = EventSubWebhook(callback_url=eventsub_url, port=8080, twitch=twitch)
+
     await eventsub.unsubscribe_all()
+
     logger.info("Waiting for cancellations to propagate...")
-    await asyncio.sleep(5)  # Wait 5 seconds before subscribing again
+    await asyncio.sleep(5)
 
     eventsub.start()
 
@@ -149,17 +186,11 @@ async def main() -> None:
         })
 
         try:
-            await eventsub.listen_stream_online(broadcaster_user_id=user.id, callback=on_live)
+            await subscribe_with_retry(eventsub=eventsub, user=user, callback=on_live)
         except EventSubSubscriptionConflict as e:
             send_err_msg(
                 exception=e,
                 msg=f"User '{user.display_name}' is already being listened for.",
-                extra_info={"name": user.display_name},
-            )
-        except EventSubSubscriptionTimeout as e:
-            send_err_msg(
-                exception=e,
-                msg=f"Timeout occurred while subscribing to user '{user.display_name}'.",
                 extra_info={"name": user.display_name},
             )
         except EventSubSubscriptionError as e:
