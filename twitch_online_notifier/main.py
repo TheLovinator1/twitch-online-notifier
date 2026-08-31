@@ -7,10 +7,10 @@ import sys
 from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
-from discord_webhook import DiscordWebhook
+from discord_webhook import DiscordWebhook  # pyright: ignore[reportMissingTypeStubs]
 from dotenv import load_dotenv
 from twitchAPI.eventsub.webhook import EventSubWebhook
-from twitchAPI.twitch import Twitch, TwitchUser
+from twitchAPI.twitch import Twitch
 from twitchAPI.type import (
     EventSubSubscriptionConflict,
     EventSubSubscriptionError,
@@ -22,6 +22,7 @@ from twitchAPI.type import (
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from twitchAPI.object.api import TwitchUser
     from twitchAPI.object.eventsub import StreamOnlineEvent
 
 
@@ -75,7 +76,7 @@ def send_message_to_discord(message: str) -> None:
     sentry_sdk.add_breadcrumb(message="Message sent to Discord")
 
 
-async def on_live(data: StreamOnlineEvent) -> None:  # noqa: RUF029
+async def on_live(data: StreamOnlineEvent) -> None:  # ruff: ignore[unused-async]
     """Called when a user goes live.
 
     Args:
@@ -149,7 +150,7 @@ async def subscribe_with_retry(
             else:
                 send_err_msg(
                     exception=e,
-                    msg=f"Timeout occurred while subscribing to user '{user.display_name}' after {max_retries} attempts.",  # noqa: E501
+                    msg=f"Timeout occurred while subscribing to user '{user.display_name}' after {max_retries} attempts.",  # ruff: ignore[line-too-long]
                     extra_info={"name": user.display_name},
                 )
         else:
